@@ -1,2 +1,2 @@
-# VoidBound
+# Voidbound
 Best Game
