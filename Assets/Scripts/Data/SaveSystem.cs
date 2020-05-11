@@ -43,10 +43,27 @@ public static class SaveSystem
         int count = 0;
         foreach (ChunkData chunk in chunks)
         {
+            bool hasVoxelInChunk = false;
 
-            SaveSystem.SaveChunk(chunk, world.worldName);
-            count++;
+            for (int x = 0; x < VoxelData.ChunkWidth; x++)
+            {
+                for (int y = 0; y < VoxelData.ChunkHeight; y++)
+                {
+                    for (int z = 0; z < VoxelData.ChunkWidth; z++)
+                    {
+                        if (chunk.map[x, y, z].id != 0)
+                        {
+                            hasVoxelInChunk = true;
+                        }
+                    }
+                }
+            }
 
+            if (hasVoxelInChunk)
+            {
+                SaveSystem.SaveChunk(chunk, world.worldName);
+                count++;
+            }
         }
 
         Debug.Log(count + " chunks saved.");

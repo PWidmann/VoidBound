@@ -58,7 +58,6 @@ public class WorldData
 
     public void LoadChunk(Vector2Int coord)
     {
-
         // If the chunk is already loaded we don't need to do anything.
         if (chunks.ContainsKey(coord))
             return;
@@ -74,7 +73,6 @@ public class WorldData
         // If not, add it to the list and populate it's voxels.
         chunks.Add(coord, new ChunkData(coord));
         chunks[coord].Populate();
-
     }
 
     public bool IsVoxelInWorld(Vector3 pos)

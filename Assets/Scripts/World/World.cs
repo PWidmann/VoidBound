@@ -30,7 +30,6 @@ public class World : MonoBehaviour
     public ChunkCoord playerChunkCoord;
     ChunkCoord playerLastChunkCoord;
 
-    List<ChunkCoord> chunksToCreate = new List<ChunkCoord>();
     public List<Chunk> chunksToUpdate = new List<Chunk>();
     public Queue<Chunk> chunksToDraw = new Queue<Chunk>();
 
@@ -74,11 +73,15 @@ public class World : MonoBehaviour
 
         string jsonImport = File.ReadAllText(Application.dataPath + "/settings.cfg");
         settings = JsonUtility.FromJson<Settings>(jsonImport);
+        
+        LoadWorld();
+        spawnPosition = new Vector3((VoxelData.WorldSizeInChunks * VoxelData.ChunkWidth) / 2f, VoxelData.ChunkHeight - 50f, (VoxelData.WorldSizeInChunks * VoxelData.ChunkWidth) / 2f);
 
-        Random.InitState(VoxelData.seed);
+        player.position = spawnPosition;
+        CheckViewDistance();
 
-        Shader.SetGlobalFloat("minGlobalLightLevel", VoxelData.minLightLevel);
-        Shader.SetGlobalFloat("maxGlobalLightLevel", VoxelData.maxLightLevel);
+        playerLastChunkCoord = GetChunkCoordFromVector3(player.position);
+
 
         if (settings.enableThreading)
         {
@@ -86,18 +89,7 @@ public class World : MonoBehaviour
             ChunkUpdateThread.Start();
         }
 
-        LoadWorld();
-
-        SetGlobalLightValue();
-        spawnPosition = new Vector3((VoxelData.WorldSizeInChunks * VoxelData.ChunkWidth) / 2f, VoxelData.ChunkHeight - 50f, (VoxelData.WorldSizeInChunks * VoxelData.ChunkWidth) / 2f);
-        GenerateWorld();
-        playerLastChunkCoord = GetChunkCoordFromVector3(player.position);
-    }
-
-    public void SetGlobalLightValue()
-    {
-        Shader.SetGlobalFloat("GlobalLightLevel", globalLightLevel);
-        Camera.main.backgroundColor = Color.Lerp(night, day, globalLightLevel);
+        
     }
 
     private void Update()
@@ -108,8 +100,6 @@ public class World : MonoBehaviour
         if (!playerChunkCoord.Equals(playerLastChunkCoord))
             CheckViewDistance();
 
-        if (chunksToCreate.Count > 0)
-            CreateChunk();
 
         if (chunksToDraw.Count > 0)
         {
@@ -135,42 +125,14 @@ public class World : MonoBehaviour
 
     void LoadWorld()
     {
-
+        
         for (int x = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; x < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; x++)
         {
             for (int z = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; z < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; z++)
             {
                 worldData.LoadChunk(new Vector2Int(x, z));
-
             }
         }
-    }
-
-    void GenerateWorld()
-    {
-
-        for (int x = (VoxelData.WorldSizeInChunks / 2) - settings.viewDistance; x < (VoxelData.WorldSizeInChunks / 2) + settings.viewDistance; x++)
-        {
-            for (int z = (VoxelData.WorldSizeInChunks / 2) - settings.viewDistance; z < (VoxelData.WorldSizeInChunks / 2) + settings.viewDistance; z++)
-            {
-                ChunkCoord newChunk = new ChunkCoord(x, z);
-                chunks[x, z] = new Chunk(newChunk);
-                chunksToCreate.Add(newChunk);
-
-            }
-        }
-
-        player.position = spawnPosition;
-        CheckViewDistance();
-    }
-
-    void CreateChunk()
-    {
-
-        ChunkCoord c = chunksToCreate[0];
-        chunksToCreate.RemoveAt(0);
-        chunks[c.x, c.z].Init();
-
     }
 
     void UpdateChunks()
@@ -272,14 +234,9 @@ public class World : MonoBehaviour
 
                     // Check if it active, if not, activate it.
                     if (chunks[x, z] == null)
-                    {
                         chunks[x, z] = new Chunk(thisChunkCoord);
-                        chunksToCreate.Add(thisChunkCoord);
-                    }
-                    else if (!chunks[x, z].isActive)
-                    {
-                        chunks[x, z].isActive = true;
-                    }
+
+                    chunks[x, z].isActive = true;
                     activeChunks.Add(thisChunkCoord);
                 }
 
