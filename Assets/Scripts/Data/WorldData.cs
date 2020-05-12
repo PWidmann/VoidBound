@@ -6,8 +6,8 @@ using UnityEngine;
 [System.Serializable]
 public class WorldData
 {
+    public string worldName; // Will be set by player eventually.
 
-    public string worldName = "Prototype"; // Will be set by player eventually.
     public int seed;
     [System.NonSerialized]
     public Dictionary<Vector2Int, ChunkData> chunks = new Dictionary<Vector2Int, ChunkData>();
@@ -15,20 +15,14 @@ public class WorldData
     [System.NonSerialized]
     public List<ChunkData> modifiedChunks = new List<ChunkData>();
 
-    public WorldData(string _worldName, int _seed)
+    public WorldData(string _worldName)
     {
-
         worldName = _worldName;
-        seed = _seed;
-
     }
 
     public WorldData(WorldData wD)
     {
-
         worldName = wD.worldName;
-        seed = wD.seed;
-
     }
 
     public ChunkData RequestChunk(Vector2Int coord, bool create)
@@ -63,7 +57,7 @@ public class WorldData
             return;
 
         // If not, we check if it is saved and if yes, get the data from there.
-        ChunkData chunk = SaveSystem.LoadChunk(worldName, coord);
+        ChunkData chunk = SaveSystem.LoadChunk(SaveSystem.tempWorldName, coord);
         if (chunk != null)
         {
             chunks.Add(coord, chunk);

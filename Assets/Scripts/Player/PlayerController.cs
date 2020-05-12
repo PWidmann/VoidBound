@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -8,7 +9,8 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-    
+    public Transform playerPosition;
+
     public bool isGrounded;
     public bool isSprinting;
 
@@ -25,10 +27,14 @@ public class PlayerController : MonoBehaviour
     private float horizontal;
     private float vertical;
     private float mouseHorizontal;
-    private float mouseVertical;
+    private float mouseVertical = 0;
     private Vector3 velocity;
     private float verticalMomentum = 0;
     private bool jumpRequest;
+
+    //Camera
+    private float yaw = 0.0f;
+    private float pitch = 0.0f;
 
     public Transform highlightBlock;
     public Transform placeBlock;
@@ -36,6 +42,7 @@ public class PlayerController : MonoBehaviour
     public float reach = 8f;
 
     public Toolbar toolbar;
+    public GameObject flashLight;
     
 
     private void Start()
@@ -44,6 +51,7 @@ public class PlayerController : MonoBehaviour
         world = GameObject.Find("World").GetComponent<World>();
 
         world.inUI = false;
+
     }
 
     private void FixedUpdate()
@@ -68,13 +76,13 @@ public class PlayerController : MonoBehaviour
         if (!world.inUI)
         {
             GetPlayerInputs();
-            transform.Rotate(Vector3.up * mouseHorizontal * world.settings.mouseSensitivity);
-
-            cam.Rotate(Vector3.right * -mouseVertical * world.settings.mouseSensitivity);
-            
-
 
             placeCursorBlocks();
+        }
+
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            flashLight.SetActive(!flashLight.activeSelf);
         }
         
     }
@@ -119,7 +127,7 @@ public class PlayerController : MonoBehaviour
         horizontal = Input.GetAxis("Horizontal");
         vertical = Input.GetAxis("Vertical");
         mouseHorizontal = Input.GetAxis("Mouse X");
-        mouseVertical = Input.GetAxis("Mouse Y");
+        mouseVertical += Input.GetAxis("Mouse Y");
 
 
         if (Input.GetButtonDown("Sprint"))

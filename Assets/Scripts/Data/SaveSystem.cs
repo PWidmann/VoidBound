@@ -7,12 +7,15 @@ using System.Threading;
 
 public static class SaveSystem
 {
+    public static string tempWorldName;
+
+    public static List<string> saveGames = new List<string>();
 
     public static void SaveWorld(WorldData world)
     {
 
         // Set our save location and make sure we have a saves folder ready to go.
-        string savePath = World.Instance.appPath + "/saves/" + world.worldName + "/";
+        string savePath = World.Instance.appPath + "/saves/" + tempWorldName + "/";
 
         // If not, create it.
         if (!Directory.Exists(savePath))
@@ -61,7 +64,7 @@ public static class SaveSystem
 
             if (hasVoxelInChunk)
             {
-                SaveSystem.SaveChunk(chunk, world.worldName);
+                SaveSystem.SaveChunk(chunk, tempWorldName);
                 count++;
             }
         }
@@ -70,17 +73,17 @@ public static class SaveSystem
 
     }
 
-    public static WorldData LoadWorld(string worldName, int seed = 0)
+    public static WorldData LoadWorld(string _worldName)
     {
 
         // Get the path to our world saves.
-        string loadPath = World.Instance.appPath + "/saves/" + worldName + "/";
+        string loadPath = World.Instance.appPath + "/saves/" + _worldName + "/";
 
         // Check if a save exists for the name we were passed.
         if (File.Exists(loadPath + "world.world"))
         {
 
-            Debug.Log(worldName + " found. Loading from save.");
+            Debug.Log(_worldName + " found. Loading from save.");
 
             // If it does, load that file, deserialize it, and put it in a WorldData class for return.
             BinaryFormatter formatter = new BinaryFormatter();
@@ -90,16 +93,14 @@ public static class SaveSystem
             WorldData world = formatter.Deserialize(stream) as WorldData;
             stream.Close();
 
-            return new WorldData(world);
-
-            // Else, if it doesn't exist, we need to create it and save it.
+            return new WorldData(world);  
         }
         else
         {
+            // Else, if it doesn't exist, we need to create it and save it.
+            Debug.Log(_worldName + " not found. Creating new world.");
 
-            Debug.Log(worldName + " not found. Creating new world.");
-
-            WorldData world = new WorldData(worldName, seed);
+            WorldData world = new WorldData(_worldName);
             SaveWorld(world);
 
             return world;
@@ -108,13 +109,13 @@ public static class SaveSystem
 
     }
 
-    public static void SaveChunk(ChunkData chunk, string worldName)
+    public static void SaveChunk(ChunkData chunk, string _worldName)
     {
 
         string chunkName = chunk.position.x + "-" + chunk.position.y;
 
         // Set our save location and make sure we have a saves folder ready to go.
-        string savePath = World.Instance.appPath + "/saves/" + worldName + "/chunks/";
+        string savePath = World.Instance.appPath + "/saves/" + _worldName + "/chunks/";
 
         // If not, create it.
         if (!Directory.Exists(savePath))

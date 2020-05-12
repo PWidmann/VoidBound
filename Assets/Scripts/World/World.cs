@@ -17,6 +17,7 @@ public class World : MonoBehaviour
     public Color night;
 
     public Transform player;
+    public PlayerController playerController;
     public Vector3 spawnPosition;
 
     public Material material;
@@ -63,13 +64,13 @@ public class World : MonoBehaviour
             _instance = this;
 
         appPath = Application.persistentDataPath;
+        playerController = FindObjectOfType<PlayerController>();
     }
 
     private void Start()
     {
-        Debug.Log("Generating new world using seed " + VoxelData.seed);
-
-        worldData = SaveSystem.LoadWorld("Testing");
+        worldData = SaveSystem.LoadWorld(SaveSystem.tempWorldName);
+        worldData.worldName = settings.worldName;
 
         string jsonImport = File.ReadAllText(Application.dataPath + "/settings.cfg");
         settings = JsonUtility.FromJson<Settings>(jsonImport);
@@ -88,8 +89,6 @@ public class World : MonoBehaviour
             ChunkUpdateThread = new Thread(new ThreadStart(ThreadedUpdate));
             ChunkUpdateThread.Start();
         }
-
-        
     }
 
     private void Update()
@@ -120,7 +119,9 @@ public class World : MonoBehaviour
 
 
         if (Input.GetKeyDown(KeyCode.F5))
+        {
             SaveSystem.SaveWorld(worldData);
+        }
     }
 
     void LoadWorld()
@@ -442,7 +443,7 @@ public class Settings
     [Header("Game Data")]
     public string version = "0.0.0.1";
 
-
+    public string worldName = "";
 
     [Header("Performance")]
     public int loadDistance = 16;
